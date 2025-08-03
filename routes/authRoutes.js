@@ -10,8 +10,10 @@ const {
     resetPassword,
     login,
     googleAuthSuccess,
-    googleAuthFailure
+    googleAuthFailure,
+    getAllUsers
 } = require('../controllers/authController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Regular Authentication Routes
 router.post('/register', register);
@@ -42,5 +44,8 @@ router.get('/google/callback',
 
 router.get('/google/success', googleAuthSuccess);
 router.get('/google/failure', googleAuthFailure);
+
+// Admin routes
+router.get('/users', authMiddleware, getAllUsers);
 
 module.exports = router;

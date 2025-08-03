@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce Admin Panel</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --sidebar-width: 250px;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            color: white;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .sidebar.collapsed .sidebar-header h3 {
+            display: none;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+        }
+
+        .sidebar-menu li {
+            margin: 5px 0;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar-menu i {
+            width: 20px;
+            margin-right: 15px;
+            text-align: center;
+        }
+
+        .sidebar.collapsed .sidebar-menu span {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+
+        .top-navbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .content-area {
+            padding: 0 30px 30px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #5dade2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 20px;
+        }
+
+        .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--secondary-color) 0%, #5dade2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #c0392b 100%);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #e67e22 100%);
+            border: none;
+            border-radius: 8px;
+        }
+
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table thead {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #34495e 100%);
+            color: white;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background-color: rgba(39, 174, 96, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-inactive {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--danger-color);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .stats-card h3 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stats-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .image-preview {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .pagination {
+            justify-content: center;
+        }
+
+        .page-link {
+            border-radius: 8px;
+            margin: 0 2px;
+            border: none;
+            color: var(--secondary-color);
+        }
+
+        .page-link:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .sidebar-header h3,
+            .sidebar-menu span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-store"></i> Admin Panel</h3>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" onclick="showSection('dashboard')" class="active"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
+            <li><a href="#" onclick="showSection('users')"><i class="fas fa-users"></i><span>Users</span></a></li>
+            <li><a href="#" onclick="showSection('brands')"><i class="fas fa-tags"></i><span>Brands</span></a></li>
+            <li><a href="#" onclick="showSection('categories')"><i class="fas fa-folder"></i><span>Categories</span></a></li>
+            <li><a href="#" onclick="showSection('products')"><i class="fas fa-box"></i><span>Products</span></a></li>
+            <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i><span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Navbar -->
+        <div class="top-navbar">
+            <div>
+                <button class="btn btn-outline-secondary" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <span class="ms-3 h5 mb-0" id="pageTitle">Dashboard</span>
+            </div>
+            <div>
+                <span class="me-3">Welcome, <strong id="adminName">Admin</strong></span>
+                <button class="btn btn-outline-danger btn-sm" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Login Form -->
+            <div id="loginSection">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header text-center">
+                                <h4><i class="fas fa-lock"></i> Admin Login</h4>
+                            </div>
+                            <div class="card-body">
+                                <form id="loginForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="loginEmail" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Password</label>
+                                        <input type="password" class="form-control" id="loginPassword" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="fas fa-sign-in-alt"></i> Login
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <h3 id="totalUsers">0</h3>
+                            <p><i class="fas fa-users"></i> Total Users</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <h3 id="totalBrands">0</h3>
+                            <p><i class="fas fa-tags"></i> Total Brands</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <h3 id="totalCategories">0</h3>
+                            <p><i class="fas fa-folder"></i> Total Categories</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <h3 id="totalProducts">0</h3>
+                            <p><i class="fas fa-box"></i> Total Products</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Section -->
+            <div id="usersSection" class="section" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-users"></i> Users Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Status</th>
+                                        <th>Joined</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <!-- Users will be loaded here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <nav>
+                            <ul class="pagination" id="usersPagination"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brands Section -->
+            <div id="brandsSection" class="section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-plus"></i> Add New Brand</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="brandForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Brand Name</label>
+                                        <input type="text" class="form-control" id="brandName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="brandDescription" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Logo URL</label>
+                                        <input type="url" class="form-control" id="brandLogo">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Website URL</label>
+                                        <input type="url" class="form-control" id="brandWebsite">
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="brandActive" checked>
+                                        <label class="form-check-label">Active</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-save"></i> Save Brand
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-tags"></i> Brands List</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Logo</th>
+                                                <th>Name</th>
+                                                <th>Website</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="brandsTableBody">
+                                            <!-- Brands will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Section -->
+            <div id="categoriesSection" class="section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-plus"></i> Add New Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="categoryForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Category Name</label>
+                                        <input type="text" class="form-control" id="categoryName" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="categoryDescription" rows="3"></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Image URL</label>
+                                        <input type="url" class="form-control" id="categoryImage">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Parent Category</label>
+                                        <select class="form-select" id="parentCategory">
+                                            <option value="">None (Root Category)</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="categoryActive" checked>
+                                        <label class="form-check-label">Active</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-save"></i> Save Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-folder"></i> Categories List</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Image</th>
+                                                <th>Name</th>
+                                                <th>Parent</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="categoriesTableBody">
+                                            <!-- Categories will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Section -->
+            <div id="productsSection" class="section" style="display: none;">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-plus"></i> Add New Product</h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="productForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Product Title</label>
+                                        <input type="text" class="form-control" id="productTitle" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Description</label>
+                                        <textarea class="form-control" id="productDescription" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Brand</label>
+                                        <select class="form-select" id="productBrand" required>
+                                            <option value="">Select Brand</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Category</label>
+                                        <select class="form-select" id="productCategory" required>
+                                            <option value="">Select Category</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Base Price</label>
+                                        <input type="number" class="form-control" id="productBasePrice" step="0.01" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Sale Price</label>
+                                        <input type="number" class="form-control" id="productSalePrice" step="0.01">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Stock Quantity</label>
+                                        <input type="number" class="form-control" id="productStock" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Image URLs (one per line)</label>
+                                        <textarea class="form-control" id="productImages" rows="3" placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"></textarea>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="productActive" checked>
+                                        <label class="form-check-label">Active</label>
+                                    </div>
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="productFeatured">
+                                        <label class="form-check-label">Featured</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100">
+                                        <i class="fas fa-save"></i> Save Product
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fas fa-box"></i> Products List</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Image</th>
+                                                <th>Title</th>
+                                                <th>Brand</th>
+                                                <th>Category</th>
+                                                <th>Price</th>
+                                                <th>Stock</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="productsTableBody">
+                                            <!-- Products will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuration
+        const API_BASE_URL = 'https://ecommerce-8agyy9516-farhans-projects-2af87f6e.vercel.app/api';
+        let authToken = localStorage.getItem('adminToken');
+        let currentUser = null;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authToken) {
+                showAdminPanel();
+                loadDashboardData();
+            } else {
+                showLoginForm();
+            }
+        });
+
+        // Authentication Functions
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            try {
+                showLoading();
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    authToken = data.token;
+                    currentUser = data.user;
+                    localStorage.setItem('adminToken', authToken);
+                    document.getElementById('adminName').textContent = currentUser.firstName + ' ' + currentUser.lastName;
+                    showAdminPanel();
+                    loadDashboardData();
+                    showAlert('Login successful!', 'success');
+                } else {
+                    showAlert(data.message || 'Login failed', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        function logout() {
+            authToken = null;
+            currentUser = null;
+            localStorage.removeItem('adminToken');
+            showLoginForm();
+            showAlert('Logged out successfully', 'info');
+        }
+
+        function showLoginForm() {
+            document.getElementById('loginSection').style.display = 'block';
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.querySelector('.top-navbar').style.display = 'none';
+            document.querySelector('.sidebar').style.display = 'none';
+            document.querySelector('.main-content').style.marginLeft = '0';
+        }
+
+        function showAdminPanel() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.querySelector('.top-navbar').style.display = 'flex';
+            document.querySelector('.sidebar').style.display = 'block';
+            document.querySelector('.main-content').style.marginLeft = 'var(--sidebar-width)';
+            showSection('dashboard');
+        }
+
+        // Navigation Functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all menu items
+            document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionName + 'Section').style.display = 'block';
+            
+            // Add active class to selected menu item
+            event.target.classList.add('active');
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'users': 'Users Management',
+                'brands': 'Brands Management',
+                'categories': 'Categories Management',
+                'products': 'Products Management'
+            };
+            document.getElementById('pageTitle').textContent = titles[sectionName];
+            
+            // Load section data
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboardData();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'brands':
+                    loadBrands();
+                    break;
+                case 'categories':
+                    loadCategories();
+                    loadCategoryOptions();
+                    break;
+                case 'products':
+                    loadProducts();
+                    loadBrandOptions();
+                    loadCategoryOptions();
+                    break;
+            }
+        }
+
+        // API Helper Functions
+        async function apiRequest(endpoint, options = {}) {
+            const defaultOptions = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(authToken && { 'Authorization': `Bearer ${authToken}` })
+                }
+            };
+            
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...defaultOptions,
+                ...options,
+                headers: {
+                    ...defaultOptions.headers,
+                    ...options.headers
+                }
+            });
+            
+            if (response.status === 401) {
+                logout();
+                return;
+            }
+            
+            return await response.json();
+        }
+
+        // Dashboard Functions
+        async function loadDashboardData() {
+            try {
+                // Note: These endpoints might not exist yet, so we'll simulate the data
+                // In a real implementation, you'd create these endpoints in your backend
+                
+                // For now, we'll load the actual data from existing endpoints
+                const brandsData = await apiRequest('/brands');
+                const categoriesData = await apiRequest('/categories');
+                const productsData = await apiRequest('/products');
+                
+                document.getElementById('totalBrands').textContent = brandsData.data ? brandsData.data.length : 0;
+                document.getElementById('totalCategories').textContent = categoriesData.data ? categoriesData.data.length : 0;
+                document.getElementById('totalProducts').textContent = productsData.data ? productsData.data.length : 0;
+                
+                // Users count would need a separate endpoint
+                document.getElementById('totalUsers').textContent = '5'; // Placeholder
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Users Functions
+        async function loadUsers() {
+            try {
+                showLoading();
+                const data = await apiRequest('/auth/users');
+                
+                const usersTableBody = document.getElementById('usersTableBody');
+                usersTableBody.innerHTML = '';
+                
+                if (data.success && data.data) {
+                    document.getElementById('totalUsers').textContent = data.pagination ? data.pagination.totalUsers : data.data.length;
+                    
+                    data.data.forEach(user => {
+                        const row = `
+                            <tr>
+                                <td>${user.firstName} ${user.lastName}</td>
+                                <td>${user.email}</td>
+                                <td>${user.phone || '-'}</td>
+                                <td>
+                                    <span class="status-badge ${user.isVerified ? 'status-active' : 'status-inactive'}">
+                                        ${user.isVerified ? 'Verified' : 'Unverified'}
+                                    </span>
+                                </td>
+                                <td>${new Date(user.createdAt).toLocaleDateString()}</td>
+                            </tr>
+                        `;
+                        usersTableBody.innerHTML += row;
+                    });
+                } else {
+                    usersTableBody.innerHTML = '<tr><td colspan="5" class="text-center">No users found</td></tr>';
+                }
+            } catch (error) {
+                const usersTableBody = document.getElementById('usersTableBody');
+                usersTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Error loading users: ${error.message}
+                        </td>
+                    </tr>
+                `;
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Brands Functions
+        async function loadBrands() {
+            try {
+                showLoading();
+                const data = await apiRequest('/brands');
+                
+                const tableBody = document.getElementById('brandsTableBody');
+                tableBody.innerHTML = '';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(brand => {
+                        const row = `
+                            <tr>
+                                <td>
+                                    ${brand.logo ? `<img src="${brand.logo}" alt="${brand.name}" class="image-preview">` : '<i class="fas fa-image text-muted"></i>'}
+                                </td>
+                                <td>${brand.name}</td>
+                                <td>
+                                    ${brand.website ? `<a href="${brand.website}" target="_blank" class="text-decoration-none">${brand.website}</a>` : '-'}
+                                </td>
+                                <td>
+                                    <span class="status-badge ${brand.isActive ? 'status-active' : 'status-inactive'}">
+                                        ${brand.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning me-1" onclick="editBrand('${brand._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteBrand('${brand._id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No brands found</td></tr>';
+                }
+            } catch (error) {
+                showAlert('Error loading brands: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        document.getElementById('brandForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const brandData = {
+                name: document.getElementById('brandName').value,
+                description: document.getElementById('brandDescription').value,
+                logo: document.getElementById('brandLogo').value,
+                website: document.getElementById('brandWebsite').value,
+                isActive: document.getElementById('brandActive').checked
+            };
+            
+            try {
+                showLoading();
+                const data = await apiRequest('/brands', {
+                    method: 'POST',
+                    body: JSON.stringify(brandData)
+                });
+                
+                if (data.success) {
+                    showAlert('Brand created successfully!', 'success');
+                    document.getElementById('brandForm').reset();
+                    loadBrands();
+                    loadDashboardData();
+                } else {
+                    showAlert(data.message || 'Error creating brand', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        async function deleteBrand(brandId) {
+            if (!confirm('Are you sure you want to delete this brand?')) return;
+            
+            try {
+                showLoading();
+                const data = await apiRequest(`/brands/${brandId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (data.success) {
+                    showAlert('Brand deleted successfully!', 'success');
+                    loadBrands();
+                    loadDashboardData();
+                } else {
+                    showAlert(data.message || 'Error deleting brand', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Categories Functions
+        async function loadCategories() {
+            try {
+                showLoading();
+                const data = await apiRequest('/categories');
+                
+                const tableBody = document.getElementById('categoriesTableBody');
+                tableBody.innerHTML = '';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(category => {
+                        const row = `
+                            <tr>
+                                <td>
+                                    ${category.image ? `<img src="${category.image}" alt="${category.name}" class="image-preview">` : '<i class="fas fa-image text-muted"></i>'}
+                                </td>
+                                <td>${category.name}</td>
+                                <td>${category.parentCategory ? 'Subcategory' : 'Root Category'}</td>
+                                <td>
+                                    <span class="status-badge ${category.isActive ? 'status-active' : 'status-inactive'}">
+                                        ${category.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning me-1" onclick="editCategory('${category._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCategory('${category._id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="5" class="text-center">No categories found</td></tr>';
+                }
+            } catch (error) {
+                showAlert('Error loading categories: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadCategoryOptions() {
+            try {
+                const data = await apiRequest('/categories');
+                const select = document.getElementById('parentCategory');
+                const productCategorySelect = document.getElementById('productCategory');
+                
+                if (select) {
+                    select.innerHTML = '<option value="">None (Root Category)</option>';
+                }
+                if (productCategorySelect) {
+                    productCategorySelect.innerHTML = '<option value="">Select Category</option>';
+                }
+                
+                if (data.success && data.data) {
+                    data.data.forEach(category => {
+                        if (select) {
+                            select.innerHTML += `<option value="${category._id}">${category.name}</option>`;
+                        }
+                        if (productCategorySelect) {
+                            productCategorySelect.innerHTML += `<option value="${category._id}">${category.name}</option>`;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading category options:', error);
+            }
+        }
+
+        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const categoryData = {
+                name: document.getElementById('categoryName').value,
+                description: document.getElementById('categoryDescription').value,
+                image: document.getElementById('categoryImage').value,
+                parentCategory: document.getElementById('parentCategory').value || null,
+                isActive: document.getElementById('categoryActive').checked
+            };
+            
+            try {
+                showLoading();
+                const data = await apiRequest('/categories', {
+                    method: 'POST',
+                    body: JSON.stringify(categoryData)
+                });
+                
+                if (data.success) {
+                    showAlert('Category created successfully!', 'success');
+                    document.getElementById('categoryForm').reset();
+                    loadCategories();
+                    loadCategoryOptions();
+                    loadDashboardData();
+                } else {
+                    showAlert(data.message || 'Error creating category', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        async function deleteCategory(categoryId) {
+            if (!confirm('Are you sure you want to delete this category?')) return;
+            
+            try {
+                showLoading();
+                const data = await apiRequest(`/categories/${categoryId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (data.success) {
+                    showAlert('Category deleted successfully!', 'success');
+                    loadCategories();
+                    loadCategoryOptions();
+                    loadDashboardData();
+                } else {
+                    showAlert(data.message || 'Error deleting category', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Products Functions
+        async function loadProducts() {
+            try {
+                showLoading();
+                const data = await apiRequest('/products');
+                
+                const tableBody = document.getElementById('productsTableBody');
+                tableBody.innerHTML = '';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(product => {
+                        const row = `
+                            <tr>
+                                <td>
+                                    ${product.images && product.images.length > 0 ? 
+                                        `<img src="${product.images[0]}" alt="${product.title}" class="image-preview">` : 
+                                        '<i class="fas fa-image text-muted"></i>'
+                                    }
+                                </td>
+                                <td>${product.title}</td>
+                                <td>${product.brand ? product.brand.name : '-'}</td>
+                                <td>${product.category ? product.category.name : '-'}</td>
+                                <td>$${product.price ? product.price.basePrice : '0'}</td>
+                                <td>${product.stock ? product.stock.available : '0'}</td>
+                                <td>
+                                    <span class="status-badge ${product.status && product.status.isActive ? 'status-active' : 'status-inactive'}">
+                                        ${product.status && product.status.isActive ? 'Active' : 'Inactive'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-warning me-1" onclick="editProduct('${product._id}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteProduct('${product._id}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="8" class="text-center">No products found</td></tr>';
+                }
+            } catch (error) {
+                showAlert('Error loading products: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function loadBrandOptions() {
+            try {
+                const data = await apiRequest('/brands');
+                const select = document.getElementById('productBrand');
+                
+                if (select) {
+                    select.innerHTML = '<option value="">Select Brand</option>';
+                    
+                    if (data.success && data.data) {
+                        data.data.forEach(brand => {
+                            select.innerHTML += `<option value="${brand._id}">${brand.name}</option>`;
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading brand options:', error);
+            }
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get selected brand and category data
+            const brandSelect = document.getElementById('productBrand');
+            const categorySelect = document.getElementById('productCategory');
+            const selectedBrand = brandSelect.options[brandSelect.selectedIndex];
+            const selectedCategory = categorySelect.options[categorySelect.selectedIndex];
+            
+            const images = document.getElementById('productImages').value
+                .split('\n')
+                .filter(url => url.trim())
+                .map(url => url.trim());
+            
+            const productData = {
+                title: document.getElementById('productTitle').value,
+                description: document.getElementById('productDescription').value,
+                brand: {
+                    brandId: brandSelect.value,
+                    name: selectedBrand.text
+                },
+                category: {
+                    categoryId: categorySelect.value,
+                    name: selectedCategory.text
+                },
+                seller: {
+                    sellerId: currentUser._id || '507f1f77bcf86cd799439011', // Placeholder seller ID
+                    name: currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Admin'
+                },
+                price: {
+                    basePrice: parseFloat(document.getElementById('productBasePrice').value),
+                    salePrice: document.getElementById('productSalePrice').value ? 
+                        parseFloat(document.getElementById('productSalePrice').value) : null,
+                    currency: 'USD'
+                },
+                stock: {
+                    total: parseInt(document.getElementById('productStock').value),
+                    available: parseInt(document.getElementById('productStock').value),
+                    reserved: 0
+                },
+                images: images,
+                status: {
+                    isActive: document.getElementById('productActive').checked,
+                    isApproved: true,
+                    isFeatured: document.getElementById('productFeatured').checked
+                }
+            };
+            
+            try {
+                showLoading();
+                const data = await apiRequest('/products', {
+                    method: 'POST',
+                    body: JSON.stringify(productData)
+                });
+                
+                if (data.success) {
+                    showAlert('Product created successfully!', 'success');
+                    document.getElementById('productForm').reset();
+                    loadProducts();
+                    loadDashboardData();
+                } else {
+                    showAlert(data.message || 'Error creating product', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        async function deleteProduct(productId) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            try {
+                showLoading();
+                const data = await apiRequest(`/products/${productId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (data.success) {
+                    showAlert('Product deleted successfully!', 'success');
+                    loadProducts();
+                    loadDashboardData();
+                } else {
+                    showAlert(data.message || 'Error deleting product', 'danger');
+                }
+            } catch (error) {
+                showAlert('Network error: ' + error.message, 'danger');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Utility Functions
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            const contentArea = document.querySelector('.content-area');
+            contentArea.insertBefore(alertDiv, contentArea.firstChild);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Placeholder functions for edit operations
+        function editBrand(brandId) {
+            showAlert('Edit functionality will be implemented soon', 'info');
+        }
+
+        function editCategory(categoryId) {
+            showAlert('Edit functionality will be implemented soon', 'info');
+        }
+
+        function editProduct(productId) {
+            showAlert('Edit functionality will be implemented soon', 'info');
+        }
+    </script>
+</body>
+</html>
