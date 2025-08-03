@@ -6,6 +6,9 @@ const cookieParser = require('cookie-parser');
 const passport = require('./config/passport');
 const connectDB = require('./config/db'); 
 const authRoutes = require('./routes/authRoutes');
+const productRoutes = require('./routes/productRoutes');
+const brandRoutes = require('./routes/brandRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 dotenv.config();
 const application = express();
@@ -37,10 +40,22 @@ application.use(passport.session());
 
 // Routes
 application.use('/api/auth', authRoutes);
+application.use('/api', productRoutes);
+application.use('/api', brandRoutes);
+application.use('/api', categoryRoutes);
 
 // Test route
 application.get('/', (req, res) => {
-    res.json({ message: 'E-commerce API is running!' });
+    res.json({ 
+        message: 'E-commerce API is running!',
+        version: '1.0.0',
+        endpoints: {
+            auth: '/api/auth',
+            products: '/api/products',
+            brands: '/api/brands',
+            categories: '/api/categories'
+        }
+    });
 });
 
 application.listen(PORT, () => {
