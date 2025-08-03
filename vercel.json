@@ -4,9 +4,17 @@
     {
       "src": "index.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "admin-panel.html",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/admin-panel.html",
+      "dest": "/admin-panel.html"
+    },
     {
       "src": "/api/(.*)",
       "dest": "/index.js"

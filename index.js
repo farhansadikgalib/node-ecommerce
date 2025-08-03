@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const path = require('path');
 const passport = require('./config/passport');
 const connectDB = require('./config/db'); 
 const authRoutes = require('./routes/authRoutes');
@@ -23,6 +24,9 @@ application.use(express.json());
 application.use(express.urlencoded({ extended: true }));
 application.use(cookieParser());
 
+// Serve static files
+application.use(express.static(path.join(__dirname)));
+
 // Session configuration for passport
 application.use(session({
     secret: process.env.SESSION_SECRET || 'your-session-secret-key',
@@ -40,9 +44,14 @@ application.use(passport.session());
 
 // Routes
 application.use('/api/auth', authRoutes);
-application.use('/api', productRoutes);
-application.use('/api', brandRoutes);
-application.use('/api', categoryRoutes);
+application.use('/api/products', productRoutes);
+application.use('/api/brands', brandRoutes);
+application.use('/api/categories', categoryRoutes);
+
+// Admin panel route
+application.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'admin-panel.html'));
+});
 
 // Test route
 application.get('/', (req, res) => {
