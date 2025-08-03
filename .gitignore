@@ -110,3 +110,4 @@ Thumbs.db
 # Upload directories (if you want to exclude uploaded files)
 uploads/*
 !uploads/.gitkeep
+.vercel
