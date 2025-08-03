@@ -74,7 +74,6 @@ const productSchema = new mongoose.Schema(
     },
     slug: { 
       type: String, 
-      required: true, 
       unique: true,
       lowercase: true 
     },
@@ -256,17 +255,33 @@ const productSchema = new mongoose.Schema(
 );
 
 // Generate slug before saving
-productSchema.pre('save', function(next) {
-  if (this.isModified('title')) {
-    this.slug = this.title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+productSchema.pre('save', async function(next) {
+  if (this.isModified('title') || this.isNew) {
+    // Generate base slug
+    let baseSlug = this.title.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    
+    // Ensure uniqueness
+    let slug = baseSlug;
+    let counter = 1;
+    
+    while (await this.constructor.findOne({ slug: slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    
+    this.slug = slug;
   }
   
   // Calculate final price
-  if (this.isModified('price.basePrice') || this.isModified('price.discount')) {
+  if (this.isModified('price.basePrice') || this.isModified('price.discount') || this.isNew) {
     const { basePrice, discount } = this.price;
-    if (discount.type === 'percentage') {
+    if (discount && discount.type === 'percentage') {
       this.price.finalPrice = basePrice - (basePrice * discount.value / 100);
-    } else if (discount.type === 'fixed') {
+    } else if (discount && discount.type === 'fixed') {
       this.price.finalPrice = Math.max(0, basePrice - discount.value);
     } else {
       this.price.finalPrice = basePrice;
@@ -274,7 +289,7 @@ productSchema.pre('save', function(next) {
   }
   
   // Update stock availability based on total stock
-  if (this.isModified('stock.total')) {
+  if (this.isModified('stock.total') || this.isNew) {
     if (this.stock.total === 0) {
       this.stock.availability = 'out_of_stock';
     } else if (this.stock.total <= 10) {

@@ -1200,6 +1200,26 @@
                 .filter(url => url.trim())
                 .map(url => url.trim());
             
+            // Ensure we have at least one image (required by model)
+            if (images.length === 0) {
+                showAlert('At least one product image is required', 'danger');
+                return;
+            }
+            
+            const basePrice = parseFloat(document.getElementById('productBasePrice').value);
+            const salePrice = document.getElementById('productSalePrice').value ? 
+                parseFloat(document.getElementById('productSalePrice').value) : null;
+            
+            // Calculate discount if sale price is provided
+            const discount = {
+                type: 'percentage',
+                value: 0
+            };
+            
+            if (salePrice && salePrice < basePrice) {
+                discount.value = Math.round(((basePrice - salePrice) / basePrice) * 100);
+            }
+            
             const productData = {
                 title: document.getElementById('productTitle').value,
                 description: document.getElementById('productDescription').value,
@@ -1216,15 +1236,12 @@
                     name: currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Admin'
                 },
                 price: {
-                    basePrice: parseFloat(document.getElementById('productBasePrice').value),
-                    salePrice: document.getElementById('productSalePrice').value ? 
-                        parseFloat(document.getElementById('productSalePrice').value) : null,
-                    currency: 'USD'
+                    basePrice: basePrice,
+                    discount: discount,
+                    finalPrice: salePrice || basePrice // Will be recalculated by pre-save hook
                 },
                 stock: {
-                    total: parseInt(document.getElementById('productStock').value),
-                    available: parseInt(document.getElementById('productStock').value),
-                    reserved: 0
+                    total: parseInt(document.getElementById('productStock').value)
                 },
                 images: images,
                 status: {
