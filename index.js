@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 const path = require('path');
 const passport = require('./config/passport');
 const connectDB = require('./config/db'); 
@@ -18,6 +19,14 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB
 connectDB();
+
+// CORS configuration
+application.use(cors({
+    origin: ['http://localhost:3000', 'http://localhost:5000', 'http://127.0.0.1:5000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Middleware
 application.use(express.json());

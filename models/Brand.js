@@ -10,7 +10,6 @@ const brandSchema = new mongoose.Schema(
     },
     slug: { 
       type: String, 
-      required: true, 
       unique: true,
       lowercase: true 
     },
@@ -32,9 +31,25 @@ const brandSchema = new mongoose.Schema(
 );
 
 // Generate slug before saving
-brandSchema.pre('save', function(next) {
-  if (this.isModified('name')) {
-    this.slug = this.name.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+brandSchema.pre('save', async function(next) {
+  if (this.isModified('name') || this.isNew) {
+    // Generate base slug
+    let baseSlug = this.name.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+    
+    // Ensure uniqueness
+    let slug = baseSlug;
+    let counter = 1;
+    
+    while (await this.constructor.findOne({ slug: slug, _id: { $ne: this._id } })) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+    
+    this.slug = slug;
   }
   next();
 });

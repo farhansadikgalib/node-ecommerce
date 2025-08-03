@@ -6,42 +6,54 @@ const User = require('../models/User');
 // Create a new product
 exports.createProduct = async (req, res) => {
   try {
+    console.log('Creating product with data:', JSON.stringify(req.body, null, 2));
     const productData = req.body;
     
     // Validate brand exists
+    console.log('Validating brand:', productData.brand?.brandId);
     const brand = await Brand.findById(productData.brand.brandId);
     if (!brand) {
+      console.log('Brand not found for ID:', productData.brand?.brandId);
       return res.status(404).json({
         success: false,
         message: 'Brand not found'
       });
     }
+    console.log('Brand found:', brand.name);
     
     // Validate category exists
+    console.log('Validating category:', productData.category?.categoryId);
     const category = await Category.findById(productData.category.categoryId);
     if (!category) {
+      console.log('Category not found for ID:', productData.category?.categoryId);
       return res.status(404).json({
         success: false,
         message: 'Category not found'
       });
     }
+    console.log('Category found:', category.name);
     
     // Validate seller exists
+    console.log('Validating seller:', productData.seller?.sellerId);
     const seller = await User.findById(productData.seller.sellerId);
     if (!seller) {
+      console.log('Seller not found for ID:', productData.seller?.sellerId);
       return res.status(404).json({
         success: false,
         message: 'Seller not found'
       });
     }
+    console.log('Seller found:', seller.email);
     
     // Set brand and category names
     productData.brand.name = brand.name;
     productData.category.name = category.name;
     productData.seller.name = `${seller.firstName} ${seller.lastName}`;
     
+    console.log('Final product data:', JSON.stringify(productData, null, 2));
     const product = new Product(productData);
     await product.save();
+    console.log('Product created successfully:', product._id);
     
     res.status(201).json({
       success: true,
